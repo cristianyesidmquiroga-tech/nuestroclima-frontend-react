@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getActual } from "../api/clima.js";
+import TirasPorHora from "./TirasPorHora.jsx";
 
 const EJEMPLO = {
   temp_exterior: 18,
@@ -156,6 +157,8 @@ export default function Dashboard() {
           </button>
         ))}
       </nav>
+
+      <TirasPorHora tab={tab} />
 
       <div className="gw-divider"></div>
 
