@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { getActual } from "../api/clima.js";
 import TirasPorHora from "./TirasPorHora.jsx";
 import HistorialPanel from "./HistorialPanel.jsx";
+import EfectosClima from "./EfectosClima.jsx";
+import { getCondition } from "../weather/condicion.js";
 
 const EJEMPLO = {
   temp_exterior: 18,
   humedad_exterior: 98,
   velocidad_viento: 2.2,
+  lluvia_hora: 1.2,
   lluvia_dia: 0,
   uv_index: 0,
   presion_relativa: 816.2,
@@ -76,9 +79,11 @@ export default function Dashboard() {
   }, []);
 
   const d = datos || {};
+  const cond = getCondition(d, ahora);
 
   return (
-    <div className="gw-container sky-rainy">
+    <div className={`gw-container sky-${cond.fx}`}>
+      <EfectosClima modo={cond.fx} />
       <div className="scene-backdrop">
         <img src="/static/img/mapa-estaciones/bg_sunny.png" alt="Finca" className="scene-backdrop-img" />
         <div className="scene-backdrop-fade"></div>
@@ -110,7 +115,7 @@ export default function Dashboard() {
 
       <section className="gw-main-weather">
         <div className="gw-main-left">
-          <img src="/static/img/mapa-estaciones/icon-rain.svg" alt="Clima" className="gw-huge-icon" />
+          <img src={cond.icon} alt={cond.text} className="gw-huge-icon" />
           <div className="gw-temp-box">
             <span className="gw-temp-value">{temp(d.temp_exterior, unidad)}</span>
             <div className="gw-temp-units">
@@ -132,7 +137,7 @@ export default function Dashboard() {
         </div>
         <div className="gw-main-right">
           <div className="gw-weather-title">Clima</div>
-          <div className="gw-weather-desc">Lluvia</div>
+          <div className="gw-weather-desc">{cond.text}</div>
           <div className="gw-clock-widget" onClick={() => setFmt24((v) => !v)}>
             <span>{horaTexto(ahora, fmt24)}</span>
             <span className="gw-clock-fmt">{fmt24 ? "24h" : "12h"}</span>
