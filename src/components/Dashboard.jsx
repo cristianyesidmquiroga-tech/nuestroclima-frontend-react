@@ -47,13 +47,27 @@ function horaTexto(d, fmt24) {
 
 function metricas(d, unidad) {
   return [
-    { t: "Rayos UV", v: num(d.uv_index) },
-    { t: "Presion Atmosferica", v: `${num(d.presion_relativa, 1)} hPa` },
-    { t: "Sensacion Termica", v: `${temp(d.sensacion_termica, unidad, 1)} °${unidad}` },
-    { t: "Punto de Rocio", v: `${temp(d.punto_rocio, unidad, 1)} °${unidad}` },
-    { t: "Radiacion Solar", v: `${num(d.radiacion_solar)} W/m2` },
-    { t: "Direccion del Viento", v: cardinal(d.direccion_viento) },
-    { t: "Rafagas de Viento", v: `${num(d.rafaga_viento)} km/h` },
+    { t: "Rayos UV", v: num(d.uv_index),
+      ayuda: "Rayos ultravioleta del sol. Entre mas alto, mas dañino para la piel.",
+      escala: "0-2 Bajo | 3-5 Moderado | 6+ Alto" },
+    { t: "Presion Atmosferica", v: `${num(d.presion_relativa, 1)} hPa`,
+      ayuda: "El peso del aire sobre nosotros. Normal: cerca de 1013 hPa.",
+      escala: "Sube → buen tiempo | Baja → lluvia o tormenta" },
+    { t: "Sensacion Termica", v: `${temp(d.sensacion_termica, unidad, 1)} °${unidad}`,
+      ayuda: "Como se siente el clima en el cuerpo: el sol, el viento y la humedad hacen que se sienta mas calor o frio de lo que marca el termometro.",
+      escala: "En Colombia puede sentirse hasta 5°C mas de lo real" },
+    { t: "Punto de Rocio", v: `${temp(d.punto_rocio, unidad, 1)} °${unidad}`,
+      ayuda: "Temperatura donde el aire forma gotitas de agua (rocio). Mide que tan humedo se siente el ambiente.",
+      escala: "Menos de 10°C seco | 15-20°C humedo | mas de 20°C muy pesado" },
+    { t: "Radiacion Solar", v: `${num(d.radiacion_solar)} W/m2`,
+      ayuda: "La energia del sol que llega al suelo.",
+      escala: "0 noche | 500-800 normal | 1000+ medio dia" },
+    { t: "Direccion del Viento", v: cardinal(d.direccion_viento),
+      ayuda: "De donde viene el viento.",
+      escala: "N Norte | S Sur | E Este | O Oeste" },
+    { t: "Rafagas de Viento", v: `${num(d.rafaga_viento)} km/h`,
+      ayuda: "La rafaga mas fuerte de viento en los ultimos minutos.",
+      escala: "0-15 brisa suave | 15-30 normal | 30-50 ventarron | 50+ fuerte" },
   ];
 }
 
@@ -69,6 +83,7 @@ export default function Dashboard() {
   const [tab, setTab] = useState("temp");
   const [fmt24, setFmt24] = useState(true);
   const [ahora, setAhora] = useState(new Date());
+  const [ayuda, setAyuda] = useState(null);
 
   useEffect(() => {
     getActual()
@@ -76,6 +91,12 @@ export default function Dashboard() {
       .catch(() => setDatos(import.meta.env.DEV ? EJEMPLO : {}));
     const t = setInterval(() => setAhora(new Date()), 1000);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const cerrar = () => setAyuda(null);
+    document.addEventListener("click", cerrar);
+    return () => document.removeEventListener("click", cerrar);
   }, []);
 
   const d = datos || {};
@@ -173,8 +194,23 @@ export default function Dashboard() {
           <div className="gw-extra-card" key={m.t}>
             <div className="gw-extra-header">
               <div className="gw-extra-title">{m.t}</div>
+              <button
+                className={`gw-info-btn${ayuda === m.t ? " active" : ""}`}
+                type="button"
+                aria-label={`Que es ${m.t}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAyuda(ayuda === m.t ? null : m.t);
+                }}
+              >
+                ?
+              </button>
             </div>
             <div className="gw-extra-val">{m.v}</div>
+            <div className={`gw-info-popover${ayuda === m.t ? " show" : ""}`}>
+              <strong>{m.ayuda}</strong>
+              <div className="gw-info-scale">{m.escala}</div>
+            </div>
           </div>
         ))}
       </section>

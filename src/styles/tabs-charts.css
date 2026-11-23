@@ -222,6 +222,11 @@
 .gw-info-popover.show {
   display: block;
 }
+/* En movil las tarjetas van a una columna para que el popover (220px) quede
+   centrado sin salirse del borde. */
+@media (max-width: 520px) {
+  .gw-extra-metrics { grid-template-columns: 1fr; }
+}
 .gw-info-scale {
   margin-top: 6px;
   padding-top: 6px;
